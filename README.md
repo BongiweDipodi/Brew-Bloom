@@ -1,4 +1,4 @@
-# Brew & Bloom
+sudo systemctl stop postgresqlsudo systemctl stop postgresql# Brew & Bloom
 
 Brew & Bloom is a small cafe game for the browser. Customers walk in and order a drink, you make it by tapping the brewing steps in the right order, and you earn coins and reputation. Spend the coins in the upgrade shop to grow your cafe, and watch your reputation level unlock new drinks.
 
