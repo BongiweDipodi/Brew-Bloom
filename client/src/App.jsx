@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { buyUpgrade, createPlayer, getPlayer, getUpgrades, serveOrder, walkout } from "./api.js";
 import { CUSTOMERS, RECIPES } from "./game/recipes.js";
+import CafeScene from "./components/CafeScene.jsx";
 import Customer from "./components/Customer.jsx";
 import Hud from "./components/Hud.jsx";
 import Shop from "./components/Shop.jsx";
@@ -112,7 +113,7 @@ export default function App() {
   if (!state) return <Welcome onStart={handleStart} error={error} />;
 
   const patienceSec = BASE_PATIENCE_SEC + state.effects.patienceBonusSec;
-  const wallpaper = state.owned.includes("pink-wallpaper") ? "wallpaper" : "";
+  const outcome = result ? result.type : "waiting"; // waiting, served or walkout
 
   return (
     <main className="app">
@@ -123,6 +124,8 @@ export default function App() {
 
       <Hud state={state} />
 
+      <CafeScene owned={state.owned} level={state.level} order={order} outcome={outcome} />
+
       <nav className="tabs">
         <button className={tab === "cafe" ? "is-active" : ""} onClick={() => setTab("cafe")}>Cafe</button>
         <button className={tab === "shop" ? "is-active" : ""} onClick={() => setTab("shop")}>Upgrades</button>
@@ -130,7 +133,7 @@ export default function App() {
 
       {error && <p className="error" role="alert">{error}</p>}
 
-      <div hidden={tab !== "cafe"} className={`cafe ${wallpaper}`}>
+      <div hidden={tab !== "cafe"} className="cafe">
         {order && (
           <Customer
             key={order.id}
