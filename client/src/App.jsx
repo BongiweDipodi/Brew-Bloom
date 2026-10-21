@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buyUpgrade, createPlayer, getPlayer, getUpgrades, serveOrder, walkout } from "./api.js";
 import { CUSTOMERS, RECIPES } from "./game/recipes.js";
 import CafeScene from "./components/CafeScene.jsx";
@@ -30,6 +30,54 @@ export default function App() {
   const [order, setOrder] = useState(null);
   const [phase, setPhase] = useState("making"); // "making" or "done"
   const [result, setResult] = useState(null);
+  const audioRef = useRef(null);
+
+  function ensureAudioContext() {
+    if (typeof window === "undefined") return null;
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return null;
+    if (!audioRef.current) audioRef.current = new AudioCtor();
+    if (audioRef.current.state === "suspended") audioRef.current.resume();
+    return audioRef.current;
+  }
+
+  function playSound(kind) {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    if (kind === "doorbell") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.22);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.42);
+      return;
+    }
+
+    const notes = [
+      { freq: 1240, time: 0, len: 0.08 },
+      { freq: 980, time: 0.05, len: 0.08 },
+    ];
+
+    notes.forEach(({ freq, time, len }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + time);
+      gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + time + len);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + len);
+    });
+  }
 
   // Load the upgrade catalogue and, if we have a saved player, their progress.
   useEffect(() => {
@@ -64,6 +112,7 @@ export default function App() {
       const next = await createPlayer(name);
       localStorage.setItem(STORAGE_KEY, next.player.id);
       setState(next);
+      playSound("doorbell");
     } catch (e) {
       setError(e.message);
     }
@@ -79,6 +128,7 @@ export default function App() {
       });
       setState(next);
       setResult({ type: "served", reward, customer: order.customer });
+      playSound("clink");
     } catch (e) {
       setError(e.message);
     }
@@ -107,6 +157,7 @@ export default function App() {
     setResult(null);
     setPhase("making");
     setOrder(newOrder(state.unlockedRecipes));
+    playSound("doorbell");
   }
 
   if (loading) return <p className="center">Opening up...</p>;

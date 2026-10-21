@@ -22,6 +22,27 @@ export const UPGRADES = {
     minLevel: 1,
     effects: {},
   },
+  "tea-rug": {
+    name: "Tea rug",
+    description: "A soft rug grounds the room and makes the cafe feel homey.",
+    cost: 75,
+    minLevel: 1,
+    effects: {},
+  },
+  "gallery-pictures": {
+    name: "Gallery pictures",
+    description: "Framed art gives the walls a warm, lived-in look.",
+    cost: 90,
+    minLevel: 2,
+    effects: {},
+  },
+  "fairy-lights": {
+    name: "Fairy lights",
+    description: "A gentle glow for cozy evenings in the cafe.",
+    cost: 110,
+    minLevel: 3,
+    effects: {},
+  },
   "espresso-machine": {
     name: "Espresso machine",
     description: "Unlocks lattes on the menu.",
